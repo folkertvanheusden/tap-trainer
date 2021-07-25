@@ -195,7 +195,7 @@ while True:
     redraw = True
     got_key = False
     got_left = got_right = False
-    while time.time() - start_ts <= 60.0 / BPM or (pos == 0 and (got_left == False and got_right == False)):
+    while time.time() - start_ts <= 60.0 / BPM or (pos == 0 and (got_left == False or got_right == False)):
         if redraw:
             redraw = False
             draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
@@ -206,20 +206,18 @@ while True:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == key_left:
-                    if pattern_left[pos] != Wait.t_none:
-                        ok_left[pos] = True
-
-                    else:
+                    if ok_left[pos] != None:
                         ok_left[pos] = False
+                    else:
+                        ok_left[pos] = pattern_left[pos] != Wait.t_none
 
                     redraw = got_left = True
 
                 elif event.key == key_right:
-                    if pattern_right[pos] != Wait.t_none:
-                        ok_right[pos] = True
-
-                    else:
+                    if ok_right[pos] != None:
                         ok_right[pos] = False
+                    else:
+                        ok_right[pos] = pattern_right[pos] != Wait.t_none
 
                     redraw = got_right = True
 
