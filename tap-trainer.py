@@ -249,8 +249,7 @@ while True:
                 print(event)
 
             elif event.type == pygame.KEYDOWN:
-                if start_ts == None:
-                    start_ts = time.time()
+                correct_key = False
 
                 if event.key == key_left:
                     if ok_left[pos] != None:
@@ -258,7 +257,7 @@ while True:
                     else:
                         ok_left[pos] = pattern_left[pos] != Wait.t_none
 
-                    got_key = redraw = got_left = True
+                    correct_key = redraw = got_left = True
 
                 elif event.key == key_right:
                     if ok_right[pos] != None:
@@ -266,7 +265,7 @@ while True:
                     else:
                         ok_right[pos] = pattern_right[pos] != Wait.t_none
 
-                    got_key = redraw = got_right = True
+                    correct_key = redraw = got_right = True
 
                 elif event.key == pygame.K_q:
                     sys.exit(0)
@@ -291,6 +290,9 @@ while True:
                     redraw = True
 
                     dump_config();
+
+                if start_ts == None and correct_key:
+                    start_ts = time.time()
 
                 if got_left and got_right:
                     break
