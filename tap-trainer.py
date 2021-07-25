@@ -5,6 +5,7 @@
 
 import configparser
 import pygame
+import pygame.midi
 import random
 import sys
 import time
@@ -70,6 +71,9 @@ def dump_config():
         config.write(configfile)
 
 pygame.init()
+
+pygame.midi.init()
+midi_in = pygame.midi.Input(pygame.midi.get_default_input_id())
 
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -210,11 +214,39 @@ while True:
             redraw = False
             draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
 
+        while midi_in.poll():
+            msg = midi_in.read(1)[0][0]
+
+            cmd = msg[0] & 0xf0
+            channel = msg[0] & 0x0f
+            note = msg[1]
+            velocity = msg[2]
+
+            if cmd == 0x90 and channel != 9 and velocity > 0:  # note-on, no percussion
+                if note > 64:
+                    if ok_right[pos] != None:
+                        ok_right[pos] = False
+                    else:
+                        ok_right[pos] = pattern_right[pos] != Wait.t_none
+
+                    redraw = got_right = True
+
+                else:
+                    if ok_left[pos] != None:
+                        ok_left[pos] = False
+                    else:
+                        ok_left[pos] = pattern_left[pos] != Wait.t_none
+
+                    redraw = got_left = True
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
 
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.midi.MIDIIN:
+                print(event)
+
+            elif event.type == pygame.KEYDOWN:
                 if event.key == key_left:
                     if ok_left[pos] != None:
                         ok_left[pos] = False
