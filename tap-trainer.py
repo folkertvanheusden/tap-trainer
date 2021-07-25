@@ -132,7 +132,7 @@ def draw_bar(which, qx, top, pattern, ok, pos, draw_marker, expert):
 
     nr = 0
     for n in pattern:
-        if nr == pos:
+        if nr == pos and expert == False:
             c = BLUE
         elif ok[nr]:
             c = GREEN
