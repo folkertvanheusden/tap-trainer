@@ -34,11 +34,11 @@ class Wait(Enum):
     t2 = 2
     t4 = 3
 
-def gen_pattern(ticks):
+def gen_pattern(ticks, allow_1st_sleep):
     out = []
 
     while len(out) < 4:
-        choice = random.randint(0, 2)
+        choice = random.randint(0, 3)
 
         if choice == 0:
             out.append(Wait.t1)
@@ -54,6 +54,9 @@ def gen_pattern(ticks):
                 out.append(Wait.t_none)
                 out.append(Wait.t_none)
                 out.append(Wait.t_none)
+
+        elif choice == 3 and (allow_1st_sleep or len(out) > 0):
+            out.append(Wait.t_none)
 
     return out
 
@@ -76,6 +79,8 @@ BLUE  = ( 40,  40, 255)
 
 line_width = 5
 
+bar_size = 4
+
 screen_info = pygame.display.Info()
 size = [screen_info.current_w, screen_info.current_h]
 
@@ -86,7 +91,7 @@ key_right = pygame.K_SLASH
 
 qx = size[0] // 4
 qy = size[1] // 4
-dx = size[0] // 2 // 4
+dx = size[0] // 2 // bar_size
 dy = size[1] // 2 // 5
 
 pygame.display.set_caption('Tap-trainer')
@@ -186,11 +191,16 @@ while True:
     start_ts = time.time()
 
     if pos == 0:
-        pattern_left = gen_pattern(4)
-        pattern_right = gen_pattern(4)
+        if random.choice([False, True]):
+            pattern_left = gen_pattern(bar_size, False)
+            pattern_right = gen_pattern(bar_size, pattern_left[0] != None)
 
-        ok_left = [ None, None, None, None ]
-        ok_right = [ None, None, None, None ]
+        else:
+            pattern_right = gen_pattern(bar_size, False)
+            pattern_left = gen_pattern(bar_size, pattern_right[0] != None)
+
+        ok_left = [ None ] * bar_size
+        ok_right = [ None ] * bar_size
 
     redraw = True
     got_key = False
