@@ -191,9 +191,9 @@ slp = 60.0 / BPM
 
 pos = 0
 
-while True:
-    start_ts = time.time()
+start_ts = None
 
+while True:
     if pos == 0:
         if random.choice([False, True]):
             pattern_left = gen_pattern(bar_size, False)
@@ -207,9 +207,8 @@ while True:
         ok_right = [ None ] * bar_size
 
     redraw = True
-    got_key = False
     got_left = got_right = False
-    while time.time() - start_ts <= 60.0 / BPM or (pos == 0 and (got_left == False or got_right == False)):
+    while start_ts == None or time.time() - start_ts <= 60.0 / BPM:
         if redraw:
             redraw = False
             draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
@@ -239,6 +238,9 @@ while True:
 
                     redraw = got_left = True
 
+                if start_ts == None:
+                    start_ts = time.time()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
@@ -247,13 +249,16 @@ while True:
                 print(event)
 
             elif event.type == pygame.KEYDOWN:
+                if start_ts == None:
+                    start_ts = time.time()
+
                 if event.key == key_left:
                     if ok_left[pos] != None:
                         ok_left[pos] = False
                     else:
                         ok_left[pos] = pattern_left[pos] != Wait.t_none
 
-                    redraw = got_left = True
+                    got_key = redraw = got_left = True
 
                 elif event.key == key_right:
                     if ok_right[pos] != None:
@@ -261,7 +266,7 @@ while True:
                     else:
                         ok_right[pos] = pattern_right[pos] != Wait.t_none
 
-                    redraw = got_right = True
+                    got_key = redraw = got_right = True
 
                 elif event.key == pygame.K_q:
                     sys.exit(0)
@@ -316,6 +321,8 @@ while True:
 
         pos = 0
 
+        start_ts = None
+
         for ok in ok_left + ok_right:
             if ok == False:
                 count_fail += 1
@@ -323,5 +330,8 @@ while True:
                 count_ok += 1
 
         time.sleep(60.0 / BPM)
+
+    else:
+        start_ts = time.time()
 
 pygame.quit()
