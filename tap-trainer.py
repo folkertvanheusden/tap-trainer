@@ -51,8 +51,10 @@ BLUE  = ( 40,  40, 255)
 
 line_width = 5
 
-size = [ 1024, 768 ]
-screen = pygame.display.set_mode(size)
+screen_info = pygame.display.Info()
+size = [screen_info.current_w, screen_info.current_h]
+
+screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
 
 key_left = pygame.K_z
 key_right = pygame.K_SLASH
@@ -132,8 +134,10 @@ def draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM
 
     text_surface = font_small.render('Tap-trainer, (C) 2021 by folkert@vanheusden.com', True, WHITE)
     screen.blit(text_surface, dest=(0, 0))
+
+    info = "press 'q' to exit | %d BPM | " % BPM
  
-    text_surface = font_small.render('%d BPM | expert' % BPM if expert else '%d BPM | beginner' % BPM, True, WHITE)
+    text_surface = font_small.render(info + 'expert' if expert else info + 'beginner', True, WHITE)
     screen.blit(text_surface, dest=(size[0] - text_surface.get_width(), 0))
 
     draw_marker = pos < len(pattern_left) and pattern_left[pos] == Wait.t_none and pattern_right[pos] == Wait.t_none
