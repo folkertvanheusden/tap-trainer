@@ -139,7 +139,7 @@ def draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos):
 
     total = count_ok + count_fail
     if total > 0:
-        str_ = '%03d%%' % (count_ok / total * 100)
+        str_ = '%3d%%' % (count_ok / total * 100)
 
         text_surface = font_big.render(str_, True, WHITE)
         screen.blit(text_surface, dest=(size[0] - text_surface.get_width(), size[1] - dy))
