@@ -3,14 +3,30 @@
 # This program is (C) 2021 by folkert@vanheusden.com.
 # License: GPL v3.0
 
+import configparser
 import pygame
 import random
 import sys
 import time
 
 from enum import Enum
+from os.path import expanduser
 
-BPM = 116
+home_dir = expanduser("~")
+cfg_file = home_dir + '/.tap-trainer.cfg'
+cfg_section = 'main'
+
+config = configparser.RawConfigParser()
+config.read(cfg_file)
+
+try:
+    BPM = config.getint(cfg_section, 'BPM')
+
+    expert = config.getboolean(cfg_section, 'expert')
+
+except configparser.NoSectionError:
+    BPM = 116
+    expert = False
 
 class Wait(Enum):
     t_none = None
@@ -41,6 +57,15 @@ def gen_pattern(ticks):
 
     return out
 
+def dump_config():
+    config = configparser.RawConfigParser()
+    config.add_section(cfg_section)
+    config.set(cfg_section, 'BPM', BPM)
+    config.set(cfg_section, 'expert', expert)
+
+    with open(cfg_file, 'w') as configfile:
+        config.write(configfile)
+
 pygame.init()
 
 BLACK = (  0,   0,   0)
@@ -67,8 +92,6 @@ dy = size[1] // 2 // 5
 pygame.display.set_caption('Tap-trainer')
 
 count_ok = count_fail = 0
-
-expert = False
 
 font_small = pygame.font.Font(pygame.font.get_default_font(), 16)
 font_big = pygame.font.Font(pygame.font.get_default_font(), dy)
@@ -206,6 +229,7 @@ while True:
                 elif event.key == pygame.K_e:
                     expert = not expert
                     redraw = True
+                    dump_config();
 
                 elif event.key == pygame.K_MINUS:
                     if BPM > 25:
@@ -213,11 +237,15 @@ while True:
 
                     redraw = True
 
-                elif event.key == pygame.K_PLUS:
+                    dump_config();
+
+                elif event.unicode == '+':  # because of shift
                     if BPM < 240:
                         BPM += 1
 
                     redraw = True
+
+                    dump_config();
 
                 if got_left and got_right:
                     break
