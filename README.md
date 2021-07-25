@@ -13,6 +13,10 @@ usage
 Press 'z' when a note is to be played for the left hand,
 and '/' for the right hand.
 
+Press 'e' to toggle between beginner- and expert mode.
+
+Press '+' and '-' to change the BPM (beats per minute).
+
 
 screenshot
 ----------
