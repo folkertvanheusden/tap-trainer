@@ -17,6 +17,9 @@ Press 'e' to toggle between beginner- and expert mode.
 
 Press '+' and '-' to change the BPM (beats per minute).
 
+You can also use a connected MIDI keyboard. Press a key on the left half of it or
+on the right half.
+
 
 screenshot
 ----------
