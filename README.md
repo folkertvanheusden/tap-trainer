@@ -16,7 +16,7 @@ and '/' for the right hand.
 
 screenshot
 ----------
-![screenshot](imgs/tap-trainer.png)
+![screenshot](imgs/tap-trainer.webm)
 
 
 (C) 2021 by Folkert van Heusden <mail@vanheusden.com>
