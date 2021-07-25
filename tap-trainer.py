@@ -66,6 +66,8 @@ pygame.display.set_caption('Tap-trainer')
 
 count_ok = count_fail = 0
 
+expert = False
+
 font_small = pygame.font.Font(pygame.font.get_default_font(), 16)
 font_big = pygame.font.Font(pygame.font.get_default_font(), dy)
 
@@ -92,7 +94,7 @@ def draw_note(x, y, which, color):
         # it's just a circle
         pass
 
-def draw_bar(which, qx, top, pattern, ok, pos, draw_marker):
+def draw_bar(which, qx, top, pattern, ok, pos, draw_marker, expert):
     for lines in range(0, 5):
         pygame.draw.line(screen, WHITE, [qx, top + lines * dy], [qx * 3, top + lines * dy], line_width)
 
@@ -117,7 +119,7 @@ def draw_bar(which, qx, top, pattern, ok, pos, draw_marker):
         x = qx + dx * nr * 7 // 8 + dx // 2
         y = top + dy * 3
 
-        if n == Wait.t_none and nr == pos and draw_marker:
+        if n == Wait.t_none and nr == pos and draw_marker and expert == False:
             pygame.draw.circle(screen, BLUE, [x, y], dy // 8)
 
         else:
@@ -125,17 +127,20 @@ def draw_bar(which, qx, top, pattern, ok, pos, draw_marker):
 
         nr += 1
 
-def draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos):
+def draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM):
     screen.fill(BLACK)
 
     text_surface = font_small.render('Tap-trainer, (C) 2021 by folkert@vanheusden.com', True, WHITE)
     screen.blit(text_surface, dest=(0, 0))
+ 
+    text_surface = font_small.render('%d BPM | expert' % BPM if expert else '%d BPM | beginner' % BPM, True, WHITE)
+    screen.blit(text_surface, dest=(size[0] - text_surface.get_width(), 0))
 
     draw_marker = pos < len(pattern_left) and pattern_left[pos] == Wait.t_none and pattern_right[pos] == Wait.t_none
 
-    draw_bar('L', qx, dy // 2, pattern_left, ok_left, pos, draw_marker)
+    draw_bar('L', qx, dy // 2, pattern_left, ok_left, pos, draw_marker, expert)
 
-    draw_bar('R', qx, dy // 2 + qy * 2, pattern_right, ok_right, pos, draw_marker)
+    draw_bar('R', qx, dy // 2 + qy * 2, pattern_right, ok_right, pos, draw_marker, expert)
 
     total = count_ok + count_fail
     if total > 0:
@@ -163,10 +168,10 @@ while True:
     redraw = True
     got_key = False
     got_left = got_right = False
-    while time.time() - start_ts <= 60.0 / BPM or pos == 0:
+    while time.time() - start_ts <= 60.0 / BPM or (pos == 0 and (got_left == False and got_right == False)):
         if redraw:
             redraw = False
-            draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos)
+            draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -194,6 +199,22 @@ while True:
                 elif event.key == pygame.K_q:
                     sys.exit(0)
 
+                elif event.key == pygame.K_e:
+                    expert = not expert
+                    redraw = True
+
+                elif event.key == pygame.K_MINUS:
+                    if BPM > 25:
+                        BPM -= 1
+
+                    redraw = True
+
+                elif event.key == pygame.K_PLUS:
+                    if BPM < 240:
+                        BPM += 1
+
+                    redraw = True
+
                 if got_left and got_right:
                     break
 
@@ -219,7 +240,7 @@ while True:
         time.sleep(sleep_left)
 
     if pos == len(pattern_left):
-        draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos)
+        draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
 
         pos = 0
 
