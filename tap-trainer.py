@@ -290,6 +290,6 @@ while True:
             else:
                 count_ok += 1
 
-        time.sleep(1)
+        time.sleep(60.0 / BPM)
 
 pygame.quit()
