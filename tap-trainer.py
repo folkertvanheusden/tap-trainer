@@ -8,6 +8,7 @@ import pygame
 import pygame.midi
 import random
 import sys
+import threading
 import time
 
 from enum import Enum
@@ -71,6 +72,8 @@ def dump_config():
         config.write(configfile)
 
 pygame.init()
+
+pygame.fastevent.init()
 
 pygame.midi.init()
 midi_in = pygame.midi.Input(pygame.midi.get_default_input_id())
@@ -187,6 +190,24 @@ def draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM
 
     pygame.display.flip()
 
+def midi_poller():
+    global midi_in
+
+    while True:
+        # really need blocking functions here
+        while not midi_in.poll():
+            time.sleep(0.001)
+
+        midi_events = midi_in.read(100)
+
+        midi_evs = pygame.midi.midis2events(midi_events, midi_in.device_id)
+
+        for m_e in midi_evs:
+            pygame.fastevent.post(m_e)
+
+th = threading.Thread(target=midi_poller)
+th.start()
+
 slp = 60.0 / BPM
 
 pos = 0
@@ -213,40 +234,35 @@ while True:
             redraw = False
             draw_screen(pattern_left, ok_left, pattern_right, ok_right, pos, expert, BPM)
 
-        while midi_in.poll():
-            msg = midi_in.read(1)[0][0]
-
-            cmd = msg[0] & 0xf0
-            channel = msg[0] & 0x0f
-            note = msg[1]
-            velocity = msg[2]
-
-            if cmd == 0x90 and channel != 9 and velocity > 0:  # note-on, no percussion
-                if note > 64:
-                    if ok_right[pos] != None:
-                        ok_right[pos] = False
-                    else:
-                        ok_right[pos] = pattern_right[pos] != Wait.t_none
-
-                    redraw = got_right = True
-
-                else:
-                    if ok_left[pos] != None:
-                        ok_left[pos] = False
-                    else:
-                        ok_left[pos] = pattern_left[pos] != Wait.t_none
-
-                    redraw = got_left = True
-
-                if start_ts == None:
-                    start_ts = time.time()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit(0)
 
             if event.type == pygame.midi.MIDIIN:
-                print(event)
+                cmd = event.status & 0xf0
+                channel = event.status & 0x0f
+                note = event.data1
+                velocity = event.data2
+
+                if cmd == 0x90 and channel != 9 and velocity > 0:  # note-on, no percussion
+                    if note > 64:
+                        if ok_right[pos] != None:
+                            ok_right[pos] = False
+                        else:
+                            ok_right[pos] = pattern_right[pos] != Wait.t_none
+
+                        redraw = got_right = True
+
+                    else:
+                        if ok_left[pos] != None:
+                            ok_left[pos] = False
+                        else:
+                            ok_left[pos] = pattern_left[pos] != Wait.t_none
+
+                        redraw = got_left = True
+
+                    if start_ts == None:
+                        start_ts = time.time()
 
             elif event.type == pygame.KEYDOWN:
                 correct_key = False
