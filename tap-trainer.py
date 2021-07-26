@@ -294,9 +294,6 @@ while True:
                 if start_ts == None and correct_key:
                     start_ts = time.time()
 
-                if got_left and got_right:
-                    break
-
         if got_left and got_right:
             break
 
